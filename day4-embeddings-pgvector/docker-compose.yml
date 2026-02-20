@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: llm-pgvector
+    environment:
+      POSTGRES_USER: llm
+      POSTGRES_PASSWORD: llm_pass
+      POSTGRES_DB: embeddings
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgvector_data:
