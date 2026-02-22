@@ -4,7 +4,13 @@ Day 3: Function Calling + Nimbus Integration
 This shows how to wire LLM function calling to real Nimbus APIs.
 The LLM orchestrates multiple API calls based on natural language requests.
 
-Example:
+Nimbus is a multi-channel notification platform. To run this locally:
+  1. Clone: git clone https://github.com/lalith-99/nimbus-app
+  2. Start: cd nimbus-app && docker-compose up
+  3. Verify: curl http://localhost:8080/health
+  4. Run this script: python3 nimbus_integration.py
+
+Example LLM request:
   "Send an email to john@example.com and check if it was delivered"
   -> LLM calls create_notification + get_notification_status
 """
@@ -222,17 +228,19 @@ NIMBUS_TOOLS = [
 # ============================================================
 
 
-def execute_function(func_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
-    """Execute the requested function with parsed arguments."""
-    if func_name == "create_notification":
-        return create_notification(**arguments)
-    elif func_name == "get_notification_status":
-        return get_notification_status(**arguments)
-    elif func_name == "list_notifications":
-        return list_notifications(**arguments)
-    else:
-        return {"error": f"Unknown function: {func_name}"}
+TOOL_REGISTRY = {
+    "create_notification": create_notification,
+    "get_notification_status": get_notification_status,
+    "list_notifications": list_notifications,
+}
 
+
+def execute_function(tool_name: str, tool_args: Dict[str, Any]) -> Any:
+    """Route tool calls via registry. Extensible — just add to TOOL_REGISTRY."""
+    func = TOOL_REGISTRY.get(tool_name)
+    if not func:
+        return {"error": f"Unknown tool: {tool_name}"}
+    return func(**tool_args)
 
 # ============================================================
 # LLM orchestration
