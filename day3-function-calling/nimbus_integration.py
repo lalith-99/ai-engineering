@@ -331,6 +331,7 @@ def run_agent(user_request: str, max_iterations: int = 5) -> str:
 
 
 def main():
+    """Parse CLI args and run the Nimbus demo."""
     import argparse
     
     parser = argparse.ArgumentParser(description="Day 3: Nimbus + LLM Function Calling")
