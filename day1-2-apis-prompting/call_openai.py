@@ -39,6 +39,7 @@ except ImportError:
 
 
 def get_client() -> OpenAI:
+    """Create an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY. Export it, then 'source ~/.zshrc'.")
@@ -131,6 +132,8 @@ def call_streaming(
 
 def call_json(client: OpenAI, topic: str, temperature: float, max_tokens: int) -> Dict[str, Any]:
     """Structured prompting: force strict JSON output and parse it."""
+    if not topic.strip():
+        raise SystemExit("Topic cannot be empty.")
     resp = client.chat.completions.create(
         model="gpt-4o-mini",
         temperature=temperature,

@@ -24,6 +24,7 @@ from openai import OpenAI
 
 
 def get_client() -> OpenAI:
+    """Create an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY")
@@ -36,16 +37,19 @@ class ResponseCache:
     """In-memory LRU-style cache for LLM responses."""
 
     def __init__(self, max_size: int = 100):
+        """Initialize cache state and counters."""
         self.cache: dict[str, dict] = {}
         self.max_size = max_size
         self.hits = 0
         self.misses = 0
 
     def _key(self, model: str, prompt: str, temperature: float) -> str:
+        """Build a stable cache key."""
         raw = f"{model}:{temperature}:{prompt}"
         return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
     def get(self, model: str, prompt: str, temperature: float) -> Optional[str]:
+        """Return a cached response if present."""
         key = self._key(model, prompt, temperature)
         if key in self.cache:
             self.hits += 1

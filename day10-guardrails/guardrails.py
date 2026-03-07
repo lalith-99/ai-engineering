@@ -26,6 +26,7 @@ except ImportError:
 
 
 def get_client() -> OpenAI:
+    """Create an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY")
@@ -45,6 +46,7 @@ class ContactInfo(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, v):
+        """Validate a basic email shape."""
         if v and "@" not in v:
             raise ValueError(f"Invalid email: {v}")
         return v
@@ -70,6 +72,7 @@ class ModerationResult(BaseModel):
 # ========== GUARDRAILS ==========
 
 def check_input_length(text: str, max_chars: int = 5000) -> tuple[bool, str]:
+    """Reject empty or oversized input."""
     if len(text) > max_chars:
         return False, f"Input too long: {len(text)} chars (max {max_chars})"
     if len(text.strip()) == 0:
@@ -93,6 +96,7 @@ def check_pii_in_output(output: str) -> list[str]:
 # ========== EXTRACTION ==========
 
 def extract_contact(client: OpenAI, text: str) -> ContactInfo:
+    """Extract contact fields from free text."""
     ok, msg = check_input_length(text)
     if not ok:
         raise ValueError(msg)
