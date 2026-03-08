@@ -22,6 +22,7 @@ from openai import OpenAI
 
 
 def get_client() -> OpenAI:
+    """Return an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY")
@@ -52,10 +53,13 @@ def run_agent(client: OpenAI, name: str, role: str, task: str, context: str = ""
         max_tokens=500,
     )
 
+    if not response.choices or response.choices[0].message.content is None:
+        raise ValueError(f"{name} returned no content")
+    tokens_used = response.usage.total_tokens if response.usage else 0
     return AgentResult(
         agent_name=name,
         output=response.choices[0].message.content,
-        tokens_used=response.usage.total_tokens,
+        tokens_used=tokens_used,
     )
 
 

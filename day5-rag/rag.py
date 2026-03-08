@@ -76,6 +76,7 @@ MAX_CONTEXT_TOKENS = 2000 # max tokens for retrieved context in prompt
 
 
 def get_openai_client() -> OpenAI:
+    """Return an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY. Export it, then 'source ~/.zshrc'.")
@@ -83,6 +84,7 @@ def get_openai_client() -> OpenAI:
 
 
 def get_db_connection():
+    """Open a pgvector database connection."""
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         register_vector(conn)
@@ -166,6 +168,8 @@ def chunk_text(
 def embed_text(client: OpenAI, text: str) -> List[float]:
     """Generate embedding for a single text."""
     resp = client.embeddings.create(model=EMBEDDING_MODEL, input=text)
+    if not resp.data:
+        raise ValueError("embedding response contained no vectors")
     return resp.data[0].embedding
 
 

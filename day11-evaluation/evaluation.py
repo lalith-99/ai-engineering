@@ -18,6 +18,7 @@ from openai import OpenAI
 
 
 def get_client() -> OpenAI:
+    """Return an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY")
@@ -114,6 +115,7 @@ def eval_llm_judge(client: OpenAI, question: str, expected: str, actual: str) ->
 # ========== GENERATE + EVALUATE ==========
 
 def generate_answer(client: OpenAI, question: str) -> str:
+    """Generate an answer for one question."""
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         temperature=0,
@@ -123,10 +125,13 @@ def generate_answer(client: OpenAI, question: str) -> str:
             {"role": "user", "content": question},
         ],
     )
+    if not response.choices or response.choices[0].message.content is None:
+        raise ValueError("model returned no answer content")
     return response.choices[0].message.content
 
 
 def run_eval_suite(use_llm_judge: bool = False):
+    """Run the eval suite and print results."""
     client = get_client()
     results = []
 
