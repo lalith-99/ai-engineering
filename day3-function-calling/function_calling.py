@@ -28,6 +28,7 @@ except ImportError:
 
 
 def get_client() -> OpenAI:
+    """Create an OpenAI client from environment config."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY. Export it, then 'source ~/.zshrc'.")
@@ -182,10 +183,9 @@ def run_function_calling(client: OpenAI, user_request: str, temperature: float =
       "required" — model MUST call at least one tool
       "none"     — no tools allowed (pure text response)
     """
-    print(f"\n{'='*60}")
-    print(f"USER REQUEST: {user_request}")
-    print(f"TOOL CHOICE: {tool_choice}")
-    print(f"{'='*60}")
+    print(f"\n{'=' * 60}")
+    print(f"event=request_start user_request={user_request!r} tool_choice={tool_choice} temperature={temperature}")
+    print(f"{'=' * 60}")
 
     messages = [
         {
@@ -203,7 +203,7 @@ def run_function_calling(client: OpenAI, user_request: str, temperature: float =
     # (e.g., "check weather, THEN decide whether to send notification")
     max_rounds = 5
     for round_num in range(1, max_rounds + 1):
-        print(f"\n--- Round {round_num} ---")
+        print(f"\n[event=tool_round_start round={round_num} max_rounds={max_rounds}]")
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",

@@ -133,6 +133,7 @@ SAMPLE_DOCS = [
 
 
 def get_openai_client() -> OpenAI:
+    """Create an OpenAI client from environment config."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY. Export it, then 'source ~/.zshrc'.")

@@ -31,12 +31,13 @@ try:
     HAS_XGBOOST = True
 except ImportError:
     HAS_XGBOOST = False
-    print("XGBoost not installed. Skipping XGBoost example. Install: pip install xgboost")
+    print("level=info event=xgboost_unavailable detail='skipping example' install='pip install xgboost'")
 
 
 def section(title: str):
+    """Print a section header."""
     print(f"\n{'=' * 50}")
-    print(f"  {title}")
+    print(f"event=section_start title={title!r}")
     print(f"{'=' * 50}\n")
 
 
