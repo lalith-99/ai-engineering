@@ -58,6 +58,7 @@ class ResponseCache:
         return None
 
     def put(self, model: str, prompt: str, temperature: float, response: str, tokens: int):
+        """Store a response and evict the oldest item when full."""
         key = self._key(model, prompt, temperature)
         if len(self.cache) >= self.max_size:
             oldest = next(iter(self.cache))
@@ -65,6 +66,7 @@ class ResponseCache:
         self.cache[key] = {"response": response, "tokens": tokens, "time": time.time()}
 
     def stats(self) -> dict:
+        """Return cache hit and size metrics."""
         total = self.hits + self.misses
         return {
             "hits": self.hits,
@@ -83,12 +85,15 @@ class TokenBudget:
     used_tokens: int = 0
 
     def can_spend(self, estimated: int) -> bool:
+        """Return whether the estimated spend fits the budget."""
         return (self.used_tokens + estimated) <= self.max_tokens
 
     def spend(self, tokens: int):
+        """Record token usage."""
         self.used_tokens += tokens
 
     def remaining(self) -> int:
+        """Return remaining tokens in the budget."""
         return self.max_tokens - self.used_tokens
 
     def usage_pct(self) -> float:
@@ -204,6 +209,7 @@ class ResilientLLM:
         }
 
     def stats(self) -> dict:
+        """Return request, budget, and cache metrics."""
         return {
             "requests": self.total_requests,
             "errors": self.total_errors,

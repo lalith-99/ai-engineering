@@ -123,6 +123,7 @@ def extract_contact(client: OpenAI, text: str) -> ContactInfo:
 
 
 def classify_ticket(client: OpenAI, text: str) -> TicketClassification:
+    """Classify a support ticket into a fixed schema."""
     ok, msg = check_input_length(text)
     if not ok:
         raise ValueError(msg)

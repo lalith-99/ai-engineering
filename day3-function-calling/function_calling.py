@@ -167,7 +167,10 @@ def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Any:
         tool_args = {}
     if not isinstance(tool_args, dict):
         return {"error": f"Invalid args for tool: {tool_name}"}
-    return func(**tool_args)
+    try:
+        return func(**tool_args)
+    except TypeError as exc:
+        return {"error": f"Invalid args for tool: {tool_name}: {exc}"}
 
 
 # ========== FUNCTION CALLING FLOW ==========
