@@ -22,6 +22,8 @@ except ImportError:
 
 
 def section(title: str):
+    """Print a section header."""
+    title = str(title).strip() or "Untitled"
     print(f"\n{'=' * 50}")
     print(f"  {title}")
     print(f"{'=' * 50}\n")
@@ -38,6 +40,8 @@ class NumpyNN:
     """
 
     def __init__(self, input_dim: int, hidden_dim: int, output_dim: int):
+        if min(input_dim, hidden_dim, output_dim) <= 0:
+            raise ValueError("layer sizes must be positive")
         np.random.seed(42)
         # Xavier initialization
         self.W1 = np.random.randn(input_dim, hidden_dim) * np.sqrt(2.0 / input_dim)
@@ -55,6 +59,9 @@ class NumpyNN:
         return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
 
     def forward(self, X):
+        X = np.asarray(X)
+        if X.ndim != 2 or X.shape[1] != self.W1.shape[0]:
+            raise ValueError("X has invalid shape")
         self.z1 = X @ self.W1 + self.b1
         self.a1 = self.relu(self.z1)
         self.z2 = self.a1 @ self.W2 + self.b2

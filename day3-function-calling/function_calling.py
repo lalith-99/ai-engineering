@@ -163,6 +163,10 @@ def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Any:
     func = TOOL_REGISTRY.get(tool_name)
     if not func:
         return {"error": f"Unknown tool: {tool_name}"}
+    if tool_args is None:
+        tool_args = {}
+    if not isinstance(tool_args, dict):
+        return {"error": f"Invalid args for tool: {tool_name}"}
     return func(**tool_args)
 
 

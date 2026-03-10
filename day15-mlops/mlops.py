@@ -37,6 +37,8 @@ LOG_PATH = MODEL_DIR / "predictions.jsonl"
 
 
 def section(title: str):
+    """Print a section header."""
+    title = str(title).strip() or "Untitled"
     print(f"\n{'=' * 50}")
     print(f"  {title}")
     print(f"{'=' * 50}\n")
@@ -91,10 +93,11 @@ def train_and_save():
 # ========== 2. LOAD + PREDICT ==========
 
 def load_and_predict():
+    """Load a saved model and run sample predictions."""
     section("Loading model and predicting")
 
-    if not MODEL_PATH.exists():
-        print("No model found. Run: python mlops.py train")
+    if not MODEL_PATH.exists() or not METADATA_PATH.exists():
+        print("Model or metadata missing. Run: python mlops.py train")
         return
 
     model = joblib.load(MODEL_PATH)
@@ -135,6 +138,7 @@ def log_prediction(features, prediction, confidence):
 # ========== 3. DATA DRIFT DETECTION ==========
 
 def detect_drift():
+    """Compare reference stats against simulated production data."""
     section("Data Drift Detection")
 
     if not METADATA_PATH.exists():
@@ -144,8 +148,12 @@ def detect_drift():
     with open(METADATA_PATH) as f:
         metadata = json.load(f)
 
-    train_means = np.array(metadata["training_data_stats"]["means"])
-    train_stds = np.array(metadata["training_data_stats"]["stds"])
+    stats_data = metadata.get("training_data_stats", {})
+    train_means = np.array(stats_data.get("means", []))
+    train_stds = np.array(stats_data.get("stds", []))
+    if len(train_means) != 5 or len(train_stds) != 5:
+        print("Invalid training stats in metadata")
+        return
 
     # Simulate "production" data with drift
     np.random.seed(123)
@@ -200,7 +208,9 @@ def serve():
 
     @app.post("/predict")
     def predict(features: list[float]):
-        X = np.array(features).reshape(1, -1)
+        if not features or len(features) != getattr(model, "n_features_in_", len(features)):
+            return {"error": f"expected {getattr(model, 'n_features_in_', 0)} features"}
+        X = np.array(features, dtype=float).reshape(1, -1)
         pred = model.predict(X)[0]
         prob = model.predict_proba(X)[0].max()
         log_prediction(X[0], pred, prob)
