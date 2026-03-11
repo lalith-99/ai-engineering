@@ -38,6 +38,10 @@ except ImportError:
     raise SystemExit("pydantic not installed. Run: pip3 install -r requirements.txt")
 
 
+DEFAULT_MODEL = "gpt-4o-mini"
+TOKENS_PER_MILLION = 1_000_000
+
+
 def get_client() -> OpenAI:
     """Create an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
@@ -49,13 +53,13 @@ def get_client() -> OpenAI:
 # ========== TOKEN COUNTING (interview must-know) ==========
 
 
-def count_tokens(text: str, model: str = "gpt-4o-mini") -> int:
+def count_tokens(text: str, model: str = DEFAULT_MODEL) -> int:
     """Count tokens using tiktoken — matches OpenAI's tokenizer exactly."""
     enc = tiktoken.encoding_for_model(model)
     return len(enc.encode(text))
 
 
-def estimate_cost(prompt_tokens: int, completion_tokens: int, model: str = "gpt-4o-mini") -> float:
+def estimate_cost(prompt_tokens: int, completion_tokens: int, model: str = DEFAULT_MODEL) -> float:
     """Estimate cost in USD from token counts."""
     pricing = {
         "gpt-4o-mini": {"input": 0.15, "output": 0.60},
@@ -63,8 +67,8 @@ def estimate_cost(prompt_tokens: int, completion_tokens: int, model: str = "gpt-
         "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
         "gpt-4.1-mini": {"input": 0.40, "output": 1.60},
     }
-    p = pricing.get(model, {"input": 0.15, "output": 0.60})
-    return (prompt_tokens / 1_000_000) * p["input"] + (completion_tokens / 1_000_000) * p["output"]
+    p = pricing.get(model, pricing[DEFAULT_MODEL])
+    return (prompt_tokens / TOKENS_PER_MILLION) * p["input"] + (completion_tokens / TOKENS_PER_MILLION) * p["output"]
 
 
 def call_basic(
@@ -76,7 +80,7 @@ def call_basic(
 ) -> str:
     """Basic chat demonstrating system vs user prompts."""
     resp = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=DEFAULT_MODEL,
         temperature=temperature,
         max_tokens=max_tokens,
         messages=[
