@@ -16,8 +16,13 @@ import json
 import sys
 from openai import OpenAI
 
+MODEL_NAME = "gpt-4o-mini"
+DEFAULT_MAX_ITERATIONS = 5
+ALLOWED_MATH_CHARS = set("0123456789+-*/().% ")
+
 
 def get_client() -> OpenAI:
+    """Return an OpenAI client."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SystemExit("Missing OPENAI_API_KEY")
@@ -86,6 +91,7 @@ KNOWLEDGE_BASE = {
 
 
 def execute_tool(name: str, args: dict) -> str:
+    """Execute a tool call."""
     if name == "get_weather":
         city = args["city"].lower()
         data = MOCK_WEATHER.get(city)
@@ -97,8 +103,7 @@ def execute_tool(name: str, args: dict) -> str:
         try:
             # only allow safe math characters
             expr = args["expression"]
-            allowed = set("0123456789+-*/().% ")
-            if not all(c in allowed for c in expr):
+            if not all(c in ALLOWED_MATH_CHARS for c in expr):
                 return json.dumps({"error": "Invalid characters in expression"})
             result = eval(expr)
             return json.dumps({"expression": expr, "result": result})
@@ -117,7 +122,7 @@ def execute_tool(name: str, args: dict) -> str:
 
 # ========== AGENT LOOP ==========
 
-def run_agent(user_input: str, max_iterations: int = 5) -> str:
+def run_agent(user_input: str, max_iterations: int = DEFAULT_MAX_ITERATIONS) -> str:
     """
     ReAct loop:
     1. Send messages to LLM
@@ -141,7 +146,7 @@ def run_agent(user_input: str, max_iterations: int = 5) -> str:
         print(f"\n--- Iteration {i + 1} ---")
 
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=MODEL_NAME,
             messages=messages,
             tools=TOOLS,
             tool_choice="auto",
