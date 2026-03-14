@@ -170,7 +170,9 @@ def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Any:
     try:
         return func(**tool_args)
     except TypeError as exc:
-        return {"error": f"Invalid args for tool: {tool_name}: {exc}"}
+        return {"error": f"tool {tool_name} rejected args: {exc}"}
+    except Exception as exc:
+        return {"error": f"tool {tool_name} failed: {exc}"}
 
 
 # ========== FUNCTION CALLING FLOW ==========

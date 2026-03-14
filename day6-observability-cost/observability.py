@@ -128,22 +128,27 @@ class UsageTracker:
     budget_usd: Optional[float] = None       # max dollars allowed
 
     def add(self, record: CallRecord):
+        """Add a call record to the session."""
         self.records.append(record)
 
     @property
     def total_tokens(self) -> int:
+        """Return total tokens across all calls."""
         return sum(r.total_tokens for r in self.records)
 
     @property
     def total_cost(self) -> float:
+        """Return total session cost in USD."""
         return sum(r.cost_usd for r in self.records)
 
     @property
     def total_calls(self) -> int:
+        """Return the number of tracked calls."""
         return len(self.records)
 
     @property
     def avg_latency(self) -> float:
+        """Return average latency in milliseconds."""
         if not self.records:
             return 0.0
         return sum(r.latency_ms for r in self.records) / len(self.records)

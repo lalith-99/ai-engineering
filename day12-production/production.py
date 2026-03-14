@@ -97,6 +97,9 @@ class TokenBudget:
         return self.max_tokens - self.used_tokens
 
     def usage_pct(self) -> float:
+        """Return budget usage as a percentage."""
+        if self.max_tokens <= 0:
+            return 0.0
         return self.used_tokens / self.max_tokens * 100
 
 
@@ -106,10 +109,12 @@ class RateLimiter:
     """Simple token bucket rate limiter."""
 
     def __init__(self, requests_per_minute: int = 20):
+        """Initialize limiter state."""
         self.rpm = requests_per_minute
         self.requests: list[float] = []
 
     def acquire(self):
+        """Block until a request slot is available."""
         now = time.time()
         # Remove requests older than 60 seconds
         self.requests = [t for t in self.requests if now - t < 60]
@@ -176,8 +181,10 @@ class ResilientLLM:
                     ],
                 )
 
+                if not response.choices or response.choices[0].message.content is None:
+                    raise ValueError("chat completion returned no content")
                 text = response.choices[0].message.content
-                tokens = response.usage.total_tokens
+                tokens = response.usage.total_tokens if response.usage else 0
 
                 # Track budget
                 self.budget.spend(tokens)
