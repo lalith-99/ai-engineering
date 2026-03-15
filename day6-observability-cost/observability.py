@@ -81,6 +81,8 @@ def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT
     """
     total = 0
     for msg in messages:
+        if msg is None:
+            continue
         total += 4  # message overhead
         total += count_tokens(msg.get("content", ""), model)
         total += count_tokens(msg.get("role", ""), model)
@@ -95,7 +97,7 @@ def calculate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> fl
     """Calculate dollar cost from token counts."""
     pricing = PRICING.get(model)
     if not pricing:
-        return 0.0
+        raise ValueError(f"unknown pricing for model: {model}")
     input_cost = (prompt_tokens / 1_000_000) * pricing["input"]
     output_cost = (completion_tokens / 1_000_000) * pricing["output"]
     return input_cost + output_cost

@@ -91,7 +91,7 @@ def get_db_connection():
         return conn
     except psycopg2.OperationalError as e:
         raise SystemExit(
-            f"Cannot connect to Postgres: {e}\n"
+            f"Cannot connect to Postgres with config host={DB_CONFIG['host']} port={DB_CONFIG['port']}: {e}\n"
             "Make sure pgvector is running (Day 4): docker compose up -d"
         )
 
@@ -168,8 +168,8 @@ def chunk_text(
 def embed_text(client: OpenAI, text: str) -> List[float]:
     """Generate embedding for a single text."""
     resp = client.embeddings.create(model=EMBEDDING_MODEL, input=text)
-    if not resp.data:
-        raise ValueError("embedding response contained no vectors")
+    if not resp.data or resp.data[0] is None:
+        raise ValueError(f"embedding response contained no vectors for model {EMBEDDING_MODEL}")
     return resp.data[0].embedding
 
 

@@ -47,6 +47,7 @@ def section(title: str):
 # ========== 1. TRAIN + SAVE ==========
 
 def train_and_save():
+    """Train a model and save artifacts."""
     section("Training model")
     MODEL_DIR.mkdir(exist_ok=True)
 
@@ -100,7 +101,11 @@ def load_and_predict():
         print("Model or metadata missing. Run: python mlops.py train")
         return
 
-    model = joblib.load(MODEL_PATH)
+    try:
+        model = joblib.load(MODEL_PATH)
+    except Exception as e:
+        print(f"Failed to load model from {MODEL_PATH}: {e}")
+        return
     with open(METADATA_PATH) as f:
         metadata = json.load(f)
 
@@ -190,6 +195,7 @@ def detect_drift():
 # ========== 4. SIMPLE API SERVER ==========
 
 def serve():
+    """Start the FastAPI model server."""
     section("Model Serving (FastAPI)")
 
     try:
@@ -208,8 +214,12 @@ def serve():
 
     @app.post("/predict")
     def predict(features: list[float]):
-        if not features or len(features) != getattr(model, "n_features_in_", len(features)):
-            return {"error": f"expected {getattr(model, 'n_features_in_', 0)} features"}
+        """Run a single prediction."""
+        expected = getattr(model, "n_features_in_", None)
+        if expected is None:
+            return {"error": "model is missing n_features_in_"}
+        if not features or len(features) != expected:
+            return {"error": f"expected {expected} features"}
         X = np.array(features, dtype=float).reshape(1, -1)
         pred = model.predict(X)[0]
         prob = model.predict_proba(X)[0].max()
