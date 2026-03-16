@@ -41,6 +41,13 @@ except ImportError:
 DEFAULT_MODEL = "gpt-4o-mini"
 TOKENS_PER_MILLION = 1_000_000
 
+PRICING_BY_MODEL = {
+    "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+    "gpt-4o": {"input": 2.50, "output": 10.00},
+    "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
+    "gpt-4.1-mini": {"input": 0.40, "output": 1.60},
+}
+
 
 def get_client() -> OpenAI:
     """Create an OpenAI client from env."""
@@ -61,13 +68,7 @@ def count_tokens(text: str, model: str = DEFAULT_MODEL) -> int:
 
 def estimate_cost(prompt_tokens: int, completion_tokens: int, model: str = DEFAULT_MODEL) -> float:
     """Estimate cost in USD from token counts."""
-    pricing = {
-        "gpt-4o-mini": {"input": 0.15, "output": 0.60},
-        "gpt-4o": {"input": 2.50, "output": 10.00},
-        "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
-        "gpt-4.1-mini": {"input": 0.40, "output": 1.60},
-    }
-    p = pricing.get(model, pricing[DEFAULT_MODEL])
+    p = PRICING_BY_MODEL.get(model, PRICING_BY_MODEL[DEFAULT_MODEL])
     return (prompt_tokens / TOKENS_PER_MILLION) * p["input"] + (completion_tokens / TOKENS_PER_MILLION) * p["output"]
 
 
@@ -114,7 +115,7 @@ def call_streaming(
       - Essential for chatbot UX — no staring at a loading spinner
     """
     stream = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=DEFAULT_MODEL,
         temperature=temperature,
         max_tokens=max_tokens,
         stream=True,  # <-- the key parameter
@@ -357,6 +358,7 @@ def get_preset_config(preset: str) -> Optional[Dict[str, Any]]:
 
 
 def main():
+    """Run the CLI examples."""
     parser = argparse.ArgumentParser(description="Day 1-2: OpenAI API + Prompting")
     parser.add_argument(
         "--mode",
