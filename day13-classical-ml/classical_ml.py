@@ -44,6 +44,7 @@ def section(title: str):
 # ========== 1. LINEAR REGRESSION FROM SCRATCH ==========
 
 def linear_regression_scratch():
+    """Run linear regression with the normal equation."""
     section("Linear Regression (from scratch)")
 
     # Generate data
@@ -55,7 +56,10 @@ def linear_regression_scratch():
     X_b = np.c_[np.ones((100, 1)), X]
 
     # Normal equation: theta = (X^T X)^-1 X^T y
-    theta = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
+    xtx = X_b.T @ X_b
+    if np.linalg.matrix_rank(xtx) < xtx.shape[0]:
+        raise ValueError("design matrix is singular")
+    theta = np.linalg.inv(xtx) @ X_b.T @ y
 
     print(f"Learned parameters: bias={theta[0]:.2f}, weight={theta[1]:.2f}")
     print(f"True parameters:    bias=4.00, weight=3.00")

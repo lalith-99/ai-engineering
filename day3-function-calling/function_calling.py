@@ -40,6 +40,10 @@ def get_client() -> OpenAI:
 
 def send_notification(user_id: str, message: str, priority: str = "normal") -> Dict[str, Any]:
     """Send a notification to a user (mock - would hit Nimbus API in real life)."""
+    if not str(user_id).strip() or not str(message).strip():
+        return {"error": "user_id and message are required"}
+    if priority not in {"low", "normal", "high"}:
+        return {"error": f"invalid priority: {priority}"}
     print(f"\n[TOOL EXECUTED] send_notification(user_id={user_id}, message={message}, priority={priority})")
     return {
         "status": "sent",
@@ -53,6 +57,9 @@ def send_notification(user_id: str, message: str, priority: str = "normal") -> D
 
 def get_weather(location: str) -> Dict[str, Any]:
     """Get weather for a location (mock - would hit weather API in real life)."""
+    location = str(location).strip()
+    if not location:
+        return {"error": "location is required"}
     print(f"\n[TOOL EXECUTED] get_weather(location={location})")
     # Mock data
     weather_data = {

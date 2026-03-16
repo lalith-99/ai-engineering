@@ -50,6 +50,8 @@ class NumpyNN:
         self.b2 = np.zeros((1, output_dim))
 
     def relu(self, x):
+        """Apply ReLU activation."""
+        x = np.asarray(x)
         return np.maximum(0, x)
 
     def relu_derivative(self, x):
@@ -59,7 +61,10 @@ class NumpyNN:
         return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
 
     def forward(self, X):
+        """Run a forward pass."""
         X = np.asarray(X)
+        if X.size == 0:
+            raise ValueError("X cannot be empty")
         if X.ndim != 2 or X.shape[1] != self.W1.shape[0]:
             raise ValueError("X has invalid shape")
         self.z1 = X @ self.W1 + self.b1
