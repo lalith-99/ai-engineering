@@ -159,12 +159,16 @@ def get_db_connection():
 def generate_embedding(client: OpenAI, text: str) -> List[float]:
     """Generate a single embedding vector using OpenAI."""
     resp = client.embeddings.create(model=EMBEDDING_MODEL, input=text)
+    if not resp.data or resp.data[0] is None:
+        raise ValueError(f"embedding response contained no vectors for model {EMBEDDING_MODEL}")
     return resp.data[0].embedding
 
 
 def generate_embeddings_batch(client: OpenAI, texts: List[str]) -> List[List[float]]:
     """Generate embeddings for multiple texts in one API call (cheaper + faster)."""
     resp = client.embeddings.create(model=EMBEDDING_MODEL, input=texts)
+    if not resp.data:
+        raise ValueError(f"embedding batch returned no vectors for model {EMBEDDING_MODEL}")
     # Sort by index to guarantee order
     sorted_data = sorted(resp.data, key=lambda x: x.index)
     return [item.embedding for item in sorted_data]

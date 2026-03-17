@@ -131,6 +131,7 @@ class ResilientLLM:
     """Production wrapper around LLM calls."""
 
     def __init__(self):
+        """Initialize client, cache, budget, and limiter."""
         self.client = get_client()
         self.cache = ResponseCache()
         self.budget = TokenBudget(max_tokens=50_000)
@@ -181,7 +182,9 @@ class ResilientLLM:
                     ],
                 )
 
-                if not response.choices or response.choices[0].message.content is None:
+                if not response.choices or response.choices[0].message is None:
+                    raise ValueError("chat completion returned no message")
+                if response.choices[0].message.content is None:
                     raise ValueError("chat completion returned no content")
                 text = response.choices[0].message.content
                 tokens = response.usage.total_tokens if response.usage else 0
@@ -210,7 +213,7 @@ class ResilientLLM:
                     time.sleep(wait)
 
         return {
-            "response": "All retries failed.",
+            "response": f"All retries failed after {max_retries} attempts.",
             "source": "error",
             "tokens": 0,
         }

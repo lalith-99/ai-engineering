@@ -169,11 +169,11 @@ def execute_tool(tool_name: str, tool_args: Dict[str, Any]) -> Any:
     """Route tool calls via registry. Extensible — just add to TOOL_REGISTRY."""
     func = TOOL_REGISTRY.get(tool_name)
     if not func:
-        return {"error": f"Unknown tool: {tool_name}"}
+        return {"error": f"tool lookup failed for {tool_name}"}
     if tool_args is None:
         tool_args = {}
     if not isinstance(tool_args, dict):
-        return {"error": f"Invalid args for tool: {tool_name}"}
+        return {"error": f"invalid args for tool {tool_name}: expected object"}
     try:
         return func(**tool_args)
     except TypeError as exc:

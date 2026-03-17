@@ -225,8 +225,9 @@ def build_rag_prompt(query: str, context_docs: List[Dict[str, Any]]) -> List[Dic
     # Build context block
     context_parts = []
     for i, doc in enumerate(context_docs, 1):
-        sim = doc["similarity"]
-        meta = doc["metadata"] if isinstance(doc["metadata"], dict) else json.loads(doc["metadata"])
+        sim = doc.get("similarity", 0.0)
+        raw_meta = doc.get("metadata") or {}
+        meta = raw_meta if isinstance(raw_meta, dict) else json.loads(raw_meta)
         topic = meta.get("topic", "unknown")
         context_parts.append(f"[Source {i} | topic={topic} | relevance={sim:.3f}]\n{doc['content']}")
 
