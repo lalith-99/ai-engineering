@@ -240,6 +240,7 @@ def get_all_documents(conn) -> List[Dict[str, Any]]:
 
 
 def get_document_count(conn) -> int:
+    """Return the number of stored documents."""
     with conn.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM documents")
         return cur.fetchone()[0]
@@ -464,6 +465,7 @@ def cmd_create_index(conn):
 
 
 def main():
+    """Parse args and run the selected pgvector demo."""
     parser = argparse.ArgumentParser(description="Day 4: Embeddings + pgvector")
     parser.add_argument(
         "--mode",

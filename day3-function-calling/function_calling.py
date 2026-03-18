@@ -286,6 +286,7 @@ def get_example_requests():
 
 
 def main():
+    """Parse args and run the selected function-calling demo."""
     parser = argparse.ArgumentParser(description="Day 3: Function Calling / Tool Use")
     parser.add_argument(
         "--request",

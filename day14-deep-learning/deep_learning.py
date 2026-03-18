@@ -40,6 +40,7 @@ class NumpyNN:
     """
 
     def __init__(self, input_dim: int, hidden_dim: int, output_dim: int):
+        """Initialize weights and biases for a 2-layer network."""
         if min(input_dim, hidden_dim, output_dim) <= 0:
             raise ValueError("layer sizes must be positive")
         np.random.seed(42)
@@ -55,9 +56,11 @@ class NumpyNN:
         return np.maximum(0, x)
 
     def relu_derivative(self, x):
+        """Return the derivative of ReLU."""
         return (x > 0).astype(float)
 
     def sigmoid(self, x):
+        """Apply sigmoid with clipping for numeric stability."""
         return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
 
     def forward(self, X):
@@ -74,6 +77,7 @@ class NumpyNN:
         return self.a2
 
     def backward(self, X, y, output, lr=0.01):
+        """Run backpropagation and update weights."""
         m = X.shape[0]
 
         # Output layer gradients
@@ -99,6 +103,7 @@ class NumpyNN:
 
 
 def numpy_nn_demo():
+    """Train the numpy network on XOR and print predictions."""
     section("Neural Network from Scratch (numpy)")
 
     # XOR problem — not linearly separable
