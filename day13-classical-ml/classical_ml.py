@@ -73,6 +73,7 @@ def linear_regression_scratch():
 # ========== 2. LINEAR REGRESSION WITH SKLEARN ==========
 
 def linear_regression_sklearn():
+    """Fit sklearn linear regression and report metrics."""
     section("Linear Regression (sklearn)")
 
     X, y = make_regression(n_samples=200, n_features=3, noise=10, random_state=42)
@@ -96,6 +97,7 @@ def linear_regression_sklearn():
 # ========== 3. LOGISTIC REGRESSION ==========
 
 def logistic_regression_demo():
+    """Train logistic regression on a synthetic dataset."""
     section("Logistic Regression")
 
     X, y = make_classification(n_samples=300, n_features=5, n_informative=3,
@@ -109,7 +111,6 @@ def logistic_regression_demo():
     model = LogisticRegression(random_state=42)
     model.fit(X_train_s, y_train)
     y_pred = model.predict(X_test_s)
-    y_prob = model.predict_proba(X_test_s)[:, 1]
 
     print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
     print(f"Precision: {precision_score(y_test, y_pred):.3f}")
@@ -122,6 +123,7 @@ def logistic_regression_demo():
 # ========== 4. DECISION TREE + RANDOM FOREST ==========
 
 def tree_and_forest():
+    """Compare a decision tree with a random forest."""
     section("Decision Tree vs Random Forest")
 
     X, y = make_classification(n_samples=500, n_features=10, n_informative=5,
@@ -159,6 +161,7 @@ def tree_and_forest():
 # ========== 5. XGBOOST ==========
 
 def xgboost_demo():
+    """Train XGBoost when the package is installed."""
     if not HAS_XGBOOST:
         return
 
@@ -190,6 +193,7 @@ def xgboost_demo():
 # ========== 6. K-MEANS CLUSTERING ==========
 
 def kmeans_demo():
+    """Cluster blob data with k-means and print inertia."""
     section("K-Means Clustering")
 
     X, y_true = make_blobs(n_samples=300, centers=4, cluster_std=0.8,

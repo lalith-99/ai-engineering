@@ -101,7 +101,10 @@ def get_db_connection():
 
 def count_tokens(text: str, model: str = "gpt-4o-mini") -> int:
     """Count tokens using tiktoken (accurate for OpenAI models)."""
-    enc = tiktoken.encoding_for_model(model)
+    try:
+        enc = tiktoken.encoding_for_model(model)
+    except KeyError:
+        enc = tiktoken.get_encoding("cl100k_base")
     return len(enc.encode(text))
 
 

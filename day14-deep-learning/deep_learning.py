@@ -128,6 +128,7 @@ def numpy_nn_demo():
 # ========== 2. PYTORCH VERSION ==========
 
 def pytorch_nn_demo():
+    """Train the PyTorch XOR model and print predictions."""
     if not HAS_TORCH:
         print("Skipping PyTorch demo (not installed)")
         return
@@ -172,6 +173,7 @@ def pytorch_nn_demo():
 # ========== 3. SELF-ATTENTION DEMO ==========
 
 def self_attention_demo():
+    """Show scaled dot-product self-attention on toy inputs."""
     section("Self-Attention (Transformer building block)")
 
     # Simulating 3 tokens with 4-dimensional embeddings
@@ -204,6 +206,7 @@ def self_attention_demo():
 
     # Softmax
     def softmax(x):
+        """Apply row-wise softmax."""
         exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
         return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
