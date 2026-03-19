@@ -124,14 +124,16 @@ def load_and_predict():
         print(f"  Confidence: {probabilities[i].max():.3f}")
 
         # Log prediction
-        log_prediction(X_new[i], predictions[i], probabilities[i].max())
+        log_prediction(X_new[i], predictions[i], probabilities[i].max(), source="load_and_predict")
 
 
-def log_prediction(features, prediction, confidence):
+def log_prediction(features, prediction, confidence, source: str = "cli"):
     """Append prediction to JSONL log for monitoring."""
     MODEL_DIR.mkdir(exist_ok=True)
     entry = {
         "timestamp": datetime.now().isoformat(),
+        "event": "prediction",
+        "source": source,
         "features": features.tolist(),
         "prediction": int(prediction),
         "confidence": round(float(confidence), 4),
@@ -223,11 +225,12 @@ def serve():
         X = np.array(features, dtype=float).reshape(1, -1)
         pred = model.predict(X)[0]
         prob = model.predict_proba(X)[0].max()
-        log_prediction(X[0], pred, prob)
+        log_prediction(X[0], pred, prob, source="api")
         return {"prediction": int(pred), "confidence": round(float(prob), 4)}
 
     @app.get("/health")
     def health():
+        """Return server health status."""
         return {"status": "ok", "model": str(MODEL_PATH)}
 
     print("Starting server on http://localhost:8000")

@@ -26,6 +26,7 @@ import json
 import time
 import argparse
 import functools
+import logging
 from typing import Any, Callable, Dict, List, Optional
 from dataclasses import dataclass, field
 
@@ -60,6 +61,8 @@ PRICING = {
 
 DEFAULT_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-small"
+
+logger = logging.getLogger(__name__)
 
 
 # ========== TOKEN COUNTER ==========
@@ -132,6 +135,10 @@ class UsageTracker:
     def add(self, record: CallRecord):
         """Add a call record to the session."""
         self.records.append(record)
+        logger.info(
+            "tracked api call",
+            extra={"call_type": record.call_type, "model": record.model, "status": record.status, "tokens": record.total_tokens, "latency_ms": round(record.latency_ms, 2)},
+        )
 
     @property
     def total_tokens(self) -> int:

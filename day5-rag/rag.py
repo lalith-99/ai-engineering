@@ -29,6 +29,7 @@ import os
 import json
 import argparse
 import time
+import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
@@ -70,6 +71,8 @@ CHAT_MODEL = "gpt-4o-mini"
 CHUNK_SIZE = 300          # tokens per chunk
 CHUNK_OVERLAP = 50        # overlapping tokens between chunks
 MAX_CONTEXT_TOKENS = 2000 # max tokens for retrieved context in prompt
+
+logger = logging.getLogger(__name__)
 
 
 # ========== CLIENT HELPERS ==========
@@ -194,7 +197,9 @@ def retrieve_similar(
             """,
             (np.array(query_embedding), np.array(query_embedding), top_k),
         )
-        return cur.fetchall()
+        rows = cur.fetchall()
+        logger.info("retrieved documents", extra={"top_k": top_k, "results": len(rows)})
+        return rows
 
 
 def rerank_by_score(
