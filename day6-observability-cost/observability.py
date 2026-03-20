@@ -65,6 +65,11 @@ EMBEDDING_MODEL = "text-embedding-3-small"
 logger = logging.getLogger(__name__)
 
 
+def get_client() -> OpenAI:
+    """Return an OpenAI client."""
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
 # ========== TOKEN COUNTER ==========
 
 
@@ -78,10 +83,7 @@ def count_tokens(text: str, model: str = DEFAULT_MODEL) -> int:
 
 
 def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT_MODEL) -> int:
-    """
-    Estimate tokens for a list of chat messages.
-    Each message has ~4 tokens overhead (role, content delimiters).
-    """
+    """Estimate tokens for chat messages."""
     if messages is None:
         raise ValueError("messages are required")
     total = 0
@@ -134,7 +136,7 @@ class UsageTracker:
     budget_tokens: Optional[int] = None      # max total tokens allowed
     budget_usd: Optional[float] = None       # max dollars allowed
 
-    def add(self, record: CallRecord):
+    def add(self, record: CallRecord) -> None:
         """Add a call record to the session."""
         self.records.append(record)
         logger.info(
@@ -184,7 +186,8 @@ class UsageTracker:
 
         if self.budget_tokens:
             used_pct = (self.total_tokens / self.budget_tokens) * 100
-            bar = "█" * int(used_pct / 5) + "░" * (20 - int(used_pct / 5))
+            filled = min(20, int(used_pct / 5))
+            bar = "█" * filled + "░" * (20 - filled)
             print(f"  Token budget:       {self.total_tokens:,} / {self.budget_tokens:,} ({used_pct:.1f}%)")
             print(f"                      [{bar}]")
 
