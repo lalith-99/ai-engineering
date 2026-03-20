@@ -82,6 +82,8 @@ def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT
     Estimate tokens for a list of chat messages.
     Each message has ~4 tokens overhead (role, content delimiters).
     """
+    if messages is None:
+        raise ValueError("messages are required")
     total = 0
     for msg in messages:
         if msg is None:
@@ -100,7 +102,7 @@ def calculate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> fl
     """Calculate dollar cost from token counts."""
     pricing = PRICING.get(model)
     if not pricing:
-        raise ValueError(f"unknown pricing for model: {model}")
+        raise ValueError(f"failed to calculate cost: unknown pricing for model {model}")
     input_cost = (prompt_tokens / 1_000_000) * pricing["input"]
     output_cost = (completion_tokens / 1_000_000) * pricing["output"]
     return input_cost + output_cost
@@ -630,6 +632,7 @@ def cmd_demo(client: OpenAI):
 
 
 def main():
+    """Run the observability demo CLI."""
     parser = argparse.ArgumentParser(description="Day 6: Observability & Cost Control")
     parser.add_argument(
         "--mode",

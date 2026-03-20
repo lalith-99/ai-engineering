@@ -183,6 +183,8 @@ def retrieve_similar(
     conn, query_embedding: List[float], top_k: int = 5
 ) -> List[Dict[str, Any]]:
     """Retrieve top-k similar documents from pgvector with cosine similarity."""
+    if conn is None:
+        raise ValueError("database connection is required")
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(
             """
@@ -235,7 +237,10 @@ def build_rag_prompt(query: str, context_docs: List[Dict[str, Any]]) -> List[Dic
     for i, doc in enumerate(context_docs, 1):
         sim = doc.get("similarity", 0.0)
         raw_meta = doc.get("metadata") or {}
-        meta = raw_meta if isinstance(raw_meta, dict) else json.loads(raw_meta)
+        try:
+            meta = raw_meta if isinstance(raw_meta, dict) else json.loads(raw_meta)
+        except (TypeError, json.JSONDecodeError) as e:
+            raise ValueError(f"invalid document metadata for source {i}: {e}") from e
         topic = meta.get("topic", "unknown")
         context_parts.append(f"[Source {i} | topic={topic} | relevance={sim:.3f}]\n{doc['content']}")
 
@@ -410,6 +415,7 @@ def cmd_ingest(client: OpenAI, conn, file_path: str):
 
 
 def main():
+    """Run the RAG demo CLI."""
     parser = argparse.ArgumentParser(description="Day 5: RAG with pgvector")
     parser.add_argument(
         "--mode",
