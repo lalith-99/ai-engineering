@@ -67,7 +67,10 @@ logger = logging.getLogger(__name__)
 
 def get_client() -> OpenAI:
     """Return an OpenAI client."""
-    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set")
+    return OpenAI(api_key=api_key)
 
 
 # ========== TOKEN COUNTER ==========
@@ -174,7 +177,7 @@ class UsageTracker:
             return False
         return True
 
-    def print_report(self):
+    def print_report(self) -> None:
         """Print a formatted session report."""
         print(f"\n{'='*70}")
         print(f"SESSION USAGE REPORT")
