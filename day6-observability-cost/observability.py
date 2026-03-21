@@ -61,6 +61,13 @@ PRICING = {
 
 DEFAULT_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-small"
+FALLBACK_ENCODING = "cl100k_base"
+MESSAGE_OVERHEAD_TOKENS = 4
+ASSISTANT_PRIMING_TOKENS = 2
+
+REPORT_SEPARATOR = "=" * 70
+BUDGET_BAR_WIDTH = 20
+BUDGET_BAR_STEP_PCT = 5
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +88,7 @@ def count_tokens(text: str, model: str = DEFAULT_MODEL) -> int:
     try:
         enc = tiktoken.encoding_for_model(model)
     except KeyError:
-        enc = tiktoken.get_encoding("cl100k_base")
+        enc = tiktoken.get_encoding(FALLBACK_ENCODING)
     return len(enc.encode(text))
 
 
@@ -93,10 +100,10 @@ def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT
     for msg in messages:
         if msg is None:
             continue
-        total += 4  # message overhead
+        total += MESSAGE_OVERHEAD_TOKENS
         total += count_tokens(msg.get("content", ""), model)
         total += count_tokens(msg.get("role", ""), model)
-    total += 2  # assistant reply priming
+    total += ASSISTANT_PRIMING_TOKENS
     return total
 
 
@@ -179,9 +186,9 @@ class UsageTracker:
 
     def print_report(self) -> None:
         """Print a formatted session report."""
-        print(f"\n{'='*70}")
-        print(f"SESSION USAGE REPORT")
-        print(f"{'='*70}")
+        print(f"\n{REPORT_SEPARATOR}")
+        print("SESSION USAGE REPORT")
+        print(REPORT_SEPARATOR)
         print(f"  Total API calls:    {self.total_calls}")
         print(f"  Total tokens:       {self.total_tokens:,}")
         print(f"  Total cost:         ${self.total_cost:.6f}")
@@ -189,8 +196,8 @@ class UsageTracker:
 
         if self.budget_tokens:
             used_pct = (self.total_tokens / self.budget_tokens) * 100
-            filled = min(20, int(used_pct / 5))
-            bar = "█" * filled + "░" * (20 - filled)
+            filled = min(BUDGET_BAR_WIDTH, int(used_pct / BUDGET_BAR_STEP_PCT))
+            bar = "█" * filled + "░" * (BUDGET_BAR_WIDTH - filled)
             print(f"  Token budget:       {self.total_tokens:,} / {self.budget_tokens:,} ({used_pct:.1f}%)")
             print(f"                      [{bar}]")
 
