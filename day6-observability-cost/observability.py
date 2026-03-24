@@ -59,6 +59,7 @@ PRICING = {
     "text-embedding-3-large": {"input": 0.13, "output": 0.0},
 }
 
+# Model and tokenizer defaults.
 DEFAULT_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-small"
 FALLBACK_ENCODING = "cl100k_base"
@@ -68,6 +69,8 @@ ASSISTANT_PRIMING_TOKENS = 2
 REPORT_SEPARATOR = "=" * 70
 BUDGET_BAR_WIDTH = 20
 BUDGET_BAR_STEP_PCT = 5
+BUDGET_BAR_FILLED = "█"
+BUDGET_BAR_EMPTY = "░"
 
 logger = logging.getLogger(__name__)
 
@@ -197,7 +200,7 @@ class UsageTracker:
         if self.budget_tokens:
             used_pct = (self.total_tokens / self.budget_tokens) * 100
             filled = min(BUDGET_BAR_WIDTH, int(used_pct / BUDGET_BAR_STEP_PCT))
-            bar = "█" * filled + "░" * (BUDGET_BAR_WIDTH - filled)
+            bar = BUDGET_BAR_FILLED * filled + BUDGET_BAR_EMPTY * (BUDGET_BAR_WIDTH - filled)
             print(f"  Token budget:       {self.total_tokens:,} / {self.budget_tokens:,} ({used_pct:.1f}%)")
             print(f"                      [{bar}]")
 
