@@ -76,7 +76,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_client() -> OpenAI:
-    """Return an OpenAI client."""
+    """Return an OpenAI client from OPENAI_API_KEY."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -103,6 +103,8 @@ def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT
     for msg in messages:
         if msg is None:
             continue
+        if not isinstance(msg, dict):
+            raise ValueError("each message must be a dict")
         total += MESSAGE_OVERHEAD_TOKENS
         total += count_tokens(msg.get("content", ""), model)
         total += count_tokens(msg.get("role", ""), model)
@@ -181,6 +183,8 @@ class UsageTracker:
 
     def check_budget(self, estimated_tokens: int = 0) -> bool:
         """Check if we're within budget. Returns True if OK."""
+        if estimated_tokens < 0:
+            raise ValueError("estimated_tokens must be >= 0")
         if self.budget_tokens and (self.total_tokens + estimated_tokens) > self.budget_tokens:
             return False
         if self.budget_usd and self.total_cost > self.budget_usd:
