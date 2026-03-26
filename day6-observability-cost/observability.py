@@ -63,6 +63,8 @@ PRICING = {
 DEFAULT_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-small"
 FALLBACK_ENCODING = "cl100k_base"
+
+# Chat token accounting.
 MESSAGE_OVERHEAD_TOKENS = 4
 ASSISTANT_PRIMING_TOKENS = 2
 
@@ -75,6 +77,12 @@ MILLION_TOKENS = 1_000_000
 
 REPORT_TITLE = "SESSION USAGE REPORT"
 REPORT_HEADERS = ("#", "Type", "Model", "Tokens", "Cost", "Latency", "Status")
+
+CALL_TYPE_CHAT = "chat"
+CALL_TYPE_EMBEDDING = "embedding"
+STATUS_SUCCESS = "success"
+STATUS_RETRY = "retry"
+STATUS_ERROR = "error"
 
 logger = logging.getLogger(__name__)
 
@@ -137,13 +145,13 @@ class CallRecord:
     """Single API call record."""
     timestamp: float
     model: str
-    call_type: str           # "chat" or "embedding"
+    call_type: str
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
     cost_usd: float
     latency_ms: float
-    status: str              # "success", "retry", "error"
+    status: str
     attempt: int = 1
     error: Optional[str] = None
 
@@ -160,7 +168,13 @@ class UsageTracker:
         self.records.append(record)
         logger.info(
             "tracked api call",
-            extra={"call_type": record.call_type, "model": record.model, "status": record.status, "tokens": record.total_tokens, "latency_ms": round(record.latency_ms, 2)},
+            extra={
+                "call_type": record.call_type,
+                "model": record.model,
+                "status": record.status,
+                "tokens": record.total_tokens,
+                "latency_ms": round(record.latency_ms, 2),
+            },
         )
 
     @property
