@@ -71,6 +71,10 @@ BUDGET_BAR_WIDTH = 20
 BUDGET_BAR_STEP_PCT = 5
 BUDGET_BAR_FILLED = "█"
 BUDGET_BAR_EMPTY = "░"
+MILLION_TOKENS = 1_000_000
+
+REPORT_TITLE = "SESSION USAGE REPORT"
+REPORT_HEADERS = ("#", "Type", "Model", "Tokens", "Cost", "Latency", "Status")
 
 logger = logging.getLogger(__name__)
 
@@ -120,8 +124,8 @@ def calculate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> fl
     pricing = PRICING.get(model)
     if not pricing:
         raise ValueError(f"failed to calculate cost: unknown pricing for model {model}")
-    input_cost = (prompt_tokens / 1_000_000) * pricing["input"]
-    output_cost = (completion_tokens / 1_000_000) * pricing["output"]
+    input_cost = (prompt_tokens / MILLION_TOKENS) * pricing["input"]
+    output_cost = (completion_tokens / MILLION_TOKENS) * pricing["output"]
     return input_cost + output_cost
 
 
@@ -194,7 +198,7 @@ class UsageTracker:
     def print_report(self) -> None:
         """Print a formatted session report."""
         print(f"\n{REPORT_SEPARATOR}")
-        print("SESSION USAGE REPORT")
+        print(REPORT_TITLE)
         print(REPORT_SEPARATOR)
         print(f"  Total API calls:    {self.total_calls}")
         print(f"  Total tokens:       {self.total_tokens:,}")
@@ -209,7 +213,8 @@ class UsageTracker:
             print(f"                      [{bar}]")
 
         if self.records:
-            print(f"\n  {'#':<4} {'Type':<10} {'Model':<25} {'Tokens':>8} {'Cost':>10} {'Latency':>10} {'Status':<8}")
+            idx, call_type, model, tokens, cost, latency, status = REPORT_HEADERS
+            print(f"\n  {idx:<4} {call_type:<10} {model:<25} {tokens:>8} {cost:>10} {latency:>10} {status:<8}")
             print(f"  {'─'*4} {'─'*10} {'─'*25} {'─'*8} {'─'*10} {'─'*10} {'─'*8}")
             for i, r in enumerate(self.records, 1):
                 print(
