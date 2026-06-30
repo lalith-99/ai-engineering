@@ -88,7 +88,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_client() -> OpenAI:
-    """Return an OpenAI client from OPENAI_API_KEY."""
+    """Return an OpenAI client."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -203,9 +203,9 @@ class UsageTracker:
         """Check if we're within budget. Returns True if OK."""
         if estimated_tokens < 0:
             raise ValueError("estimated_tokens must be >= 0")
-        if self.budget_tokens and (self.total_tokens + estimated_tokens) > self.budget_tokens:
+        if self.budget_tokens is not None and (self.total_tokens + estimated_tokens) > self.budget_tokens:
             return False
-        if self.budget_usd and self.total_cost > self.budget_usd:
+        if self.budget_usd is not None and self.total_cost > self.budget_usd:
             return False
         return True
 
@@ -219,8 +219,8 @@ class UsageTracker:
         print(f"  Total cost:         ${self.total_cost:.6f}")
         print(f"  Avg latency:        {self.avg_latency:.0f}ms")
 
-        if self.budget_tokens:
-            used_pct = (self.total_tokens / self.budget_tokens) * 100
+        if self.budget_tokens is not None:
+            used_pct = 0.0 if self.budget_tokens == 0 else (self.total_tokens / self.budget_tokens) * 100
             filled = min(BUDGET_BAR_WIDTH, int(used_pct / BUDGET_BAR_STEP_PCT))
             bar = BUDGET_BAR_FILLED * filled + BUDGET_BAR_EMPTY * (BUDGET_BAR_WIDTH - filled)
             print(f"  Token budget:       {self.total_tokens:,} / {self.budget_tokens:,} ({used_pct:.1f}%)")
