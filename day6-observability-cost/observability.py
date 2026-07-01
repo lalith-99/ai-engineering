@@ -88,7 +88,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_client() -> OpenAI:
-    """Return an OpenAI client."""
+    """Create an OpenAI client from env."""
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set")
@@ -118,8 +118,8 @@ def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT
         if not isinstance(msg, dict):
             raise ValueError("each message must be a dict")
         total += MESSAGE_OVERHEAD_TOKENS
-        total += count_tokens(msg.get("content", ""), model)
-        total += count_tokens(msg.get("role", ""), model)
+        total += count_tokens(str(msg.get("content", "")), model)
+        total += count_tokens(str(msg.get("role", "")), model)
     total += ASSISTANT_PRIMING_TOKENS
     return total
 
@@ -129,6 +129,8 @@ def estimate_message_tokens(messages: List[Dict[str, str]], model: str = DEFAULT
 
 def calculate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
     """Calculate dollar cost from token counts."""
+    if prompt_tokens < 0 or completion_tokens < 0:
+        raise ValueError("token counts must be >= 0")
     pricing = PRICING.get(model)
     if not pricing:
         raise ValueError(f"failed to calculate cost: unknown pricing for model {model}")
@@ -205,7 +207,7 @@ class UsageTracker:
             raise ValueError("estimated_tokens must be >= 0")
         if self.budget_tokens is not None and (self.total_tokens + estimated_tokens) > self.budget_tokens:
             return False
-        if self.budget_usd is not None and self.total_cost > self.budget_usd:
+        if self.budget_usd is not None and self.total_cost >= self.budget_usd:
             return False
         return True
 
